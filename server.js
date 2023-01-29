@@ -117,7 +117,7 @@ app.get('/users/geolocation', (req, res) => {
 // Create a route
 app.get('/users', (req, res) => {
   db('users')
-    .select('id', 'first_name')
+    .select('id', 'first_name', 'postal')
     .then(users => {
       res.json(users);
     })
