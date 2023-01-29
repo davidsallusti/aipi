@@ -136,7 +136,7 @@ app.get('/users/:id', (req, res) => {
       if (user.length) {
         res.json(user);
       } else {
-        res.status(404).json({ message: 'User not found' });
+        res.status(404).json({ message: 'User not found1' });
       }
     })
     .catch(err => {
@@ -144,10 +144,23 @@ app.get('/users/:id', (req, res) => {
     });
 });
 
-// Create a route
+// // Create a route
+// app.post('/users', async (req, res) => {
+//   try {
+//     const { first_name, last_name, postal } = req.body;
+//     await db('users').insert({ first_name, last_name, postal });
+//     res.status(201).send({ message: 'User created successfully' });
+//   } catch (err) {
+//     res.status(500).send({ message: 'Error creating user', error: err });
+//   }
+// });
+
 app.post('/users', async (req, res) => {
   try {
     const { first_name, last_name, postal } = req.body;
+    if (!first_name || !last_name) {
+      return res.status(400).send({ error: 'Missing required fields: first_name and last_name are required' });
+    }
     await db('users').insert({ first_name, last_name, postal });
     res.status(201).send({ message: 'User created successfully' });
   } catch (err) {
