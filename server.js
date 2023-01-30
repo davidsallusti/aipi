@@ -225,14 +225,15 @@ app.post('/generate-pdf', async (req, res) => {
   const inputs = req.body.fields;
   
   console.log('template:', template);
-  console.log('inputs:', inputs);
+  console.log('inputs:', req.body.fields);
 
-  generate({ template, inputs: Object.entries(req.body.fields).map(([key, value]) => ({ key, value })) })
+  generate({ template, inputs})
     .then((pdf) => {
       console.log(pdf);
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
-      res.send(pdf);
+      // fs.writeFileSync(path.join(__dirname, `test.pdf`), pdf);
+      res(pdf);
     })
     .catch((error) => {
       console.error(error);
