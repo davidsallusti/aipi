@@ -185,7 +185,7 @@ app.post('/create-user', (req, res) => {
     res.json({
       message: 'User created successfully',
       username: username,
-      password: password
+      password: hashedPassword
     });
   }).catch(err => {
     console.log(err);
@@ -230,10 +230,9 @@ app.post('/generate-pdf', async (req, res) => {
   generate({ template, inputs})
     .then((pdf) => {
       console.log(pdf);
-      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
-      // fs.writeFileSync(path.join(__dirname, `test.pdf`), pdf);
-      res(pdf);
+      res.status(200).send({ buffer: pdf.toString('base64') });
     })
     .catch((error) => {
       console.error(error);
