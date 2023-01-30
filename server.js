@@ -232,7 +232,7 @@ app.post('/generate-pdf', async (req, res) => {
       console.log(pdf);
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
-      res.status(200).send(pdf);
+      res.status(200).send(Buffer.from(pdf));
     })
     .catch((error) => {
       console.error(error);
