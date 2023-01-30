@@ -230,9 +230,9 @@ app.post('/generate-pdf', async (req, res) => {
   generate({ template, inputs})
     .then((pdf) => {
       console.log(pdf);
-      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
-      res.status(200).send({ buffer: pdf.toString('base64') });
+      res.status(200).send(pdf);
     })
     .catch((error) => {
       console.error(error);
