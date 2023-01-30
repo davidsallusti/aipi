@@ -288,8 +288,8 @@ app.post('/generate-pdf2', (req, res) => {
 
       fs.writeFileSync(path.resolve(__dirname, "output.docx"), buf);
       res.setHeader('Content-Type', 'application/octet-stream');
-res.setHeader('Content-Disposition', 'attachment; filename=output.docx');
-res.status(200).json({ data: buf });
+      res.setHeader('Content-Disposition', 'attachment; filename=output.docx');
+      res.status(200).send(buf);
     }
   });
 });
