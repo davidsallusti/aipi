@@ -220,27 +220,58 @@ app.post('/create-user', (req, res) => {
 // });
 
 //pdf
-app.post('/generate-pdf', async (req, res) => {
-  const template = req.body.template;
-  const inputs = req.body.fields;
+// app.post('/generate-pdf', async (req, res) => {
+//   const template = req.body.template;
+//   const inputs = req.body.fields;
   
-  console.log('template:', template);
-  console.log('inputs:', req.body.fields);
+//   console.log('template:', template);
+//   console.log('inputs:', req.body.fields);
 
-  generate({ template, inputs})
-    .then((pdf) => {
-      console.log(pdf);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
-      res.status(200).send(Buffer.from(pdf));
+//   generate({ template, inputs})
+//     .then((pdf) => {
+//       console.log(pdf);
+//       res.setHeader('Content-Type', 'application/pdf');
+//       res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
+//       res.status(200).send(Buffer.from(pdf));
+//     })
+//     .catch((error) => {
+//       console.error(error);
+//       res.status(500).send({ message: 'PDF generation failed', error });
+//     });
+// });
+
+
+app.post('/generate-pdf', async (req, res) => {
+  const templateId = req.body.templateId;
+  
+  db('templates')
+    .select('data')
+    .where('id', templateId)
+    .then((rows) => {
+      if (rows.length === 0) {
+        res.status(404).send({ message: 'Template not found' });
+        return;
+      }
+
+      const template = rows[0].data;
+      const inputs = req.body.fields;
+
+      generate({ template, inputs })
+        .then((pdf) => {
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
+          res.status(200).send(Buffer.from(pdf));
+        })
+        .catch((error) => {
+          console.error(error);
+          res.status(500).send({ message: 'PDF generation failed', error });
+        });
     })
     .catch((error) => {
       console.error(error);
-      res.status(500).send({ message: 'PDF generation failed', error });
+      res.status(500).send({ message: 'Template retrieval failed', error });
     });
 });
-
-
 
   
 // Start the server
