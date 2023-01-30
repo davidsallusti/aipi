@@ -13,14 +13,15 @@ const Docxtemplater = require("docxtemplater");
 const fs = require("fs");
 const path = require("path");
 const request = require('request');
-
-
+const pdfme = require('@pdfme/generator');
+const generate = pdfme.generate;
 
 
 // Create express app
 const app = express();
 app.use(bodyParser.json({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
 
 // Configure knex to connect to Postgres database
 const knexConfig = {
@@ -218,82 +219,26 @@ app.post('/create-user', (req, res) => {
 //   res.status(200).json({message: 'PDF generated successfully'});
 // });
 
-//pdfnew
+//pdf
+app.post('/generate-pdf', async (req, res) => {
+  const template = req.body.template;
+  const inputs = req.body.fields;
+  
+  console.log('template:', template);
+  console.log('inputs:', inputs);
 
-app.post('/generate-pdf', (req, res) => {
-  const fields = Object.keys(req.body);
-  const content = fs.readFileSync(
-    path.resolve(__dirname, "tag_example.docx"),
-    "binary"
-);
-
-const zip = new PizZip(content);
-
-const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
+  generate({ template, inputs: Object.entries(req.body.fields).map(([key, value]) => ({ key, value })) })
+    .then((pdf) => {
+      console.log(pdf);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=output.pdf');
+      res.send(pdf);
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send({ message: 'PDF generation failed', error });
+    });
 });
-
-// Render the document (Replace {first_name} by John, {last_name} by Doe, ...)
-doc.render({
-  ...fields.reduce((acc, field) => ({
-    ...acc,
-    [field]: req.body[field]
-  }), {})
-});
-
-const buf = doc.getZip().generate({
-    type: "nodebuffer",
-    // compression: DEFLATE adds a compression step.
-    // For a 50MB output document, expect 500ms additional CPU time
-    compression: "DEFLATE",
-});
-
-// buf is a nodejs Buffer, you can either write it to a
-// file or res.send it with express for example.
-fs.writeFileSync(path.resolve(__dirname, "output.docx"), buf);
-res.status(200).json({message: 'PDF generated successfully'});
-});
-
-//withrequest
-
-app.post('/generate-pdf2', (req, res) => {
-  const fields = Object.keys(req.body);
-  const templateUrl = decodeURI(req.body.templateUrl);
-
-  request.get({
-    url: templateUrl,
-    encoding: null
-  }, (err, response, body) => {
-    if (err) {
-      res.status(500).json({ message: 'Error fetching template file' });
-    } else {
-      const zip = new PizZip(body);
-      const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-      });
-
-      doc.render({
-        ...fields.reduce((acc, field) => ({
-          ...acc,
-          [field]: req.body[field]
-        }), {})
-      });
-
-      const buf = doc.getZip().generate({
-        type: "nodebuffer",
-        compression: "DEFLATE",
-      });
-
-      fs.writeFileSync(path.resolve(__dirname, "output.docx"), buf);
-      res.setHeader('Content-Type', 'application/octet-stream');
-      res.setHeader('Content-Disposition', 'attachment; filename=output.docx');
-      res.status(200).send(buf);
-    }
-  });
-});
-
 
 
 
